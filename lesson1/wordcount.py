@@ -46,7 +46,9 @@ import sys
 # Then print_words() and print_top() can just call the utility function.
 
 def wordcount(filename):
-
+    """
+    Build the word/count dictionnary.
+    """
     word_dict = {}
 
     file = open(filename, 'r')
@@ -66,7 +68,10 @@ def wordcount(filename):
     return word_dict
 
 def print_words(filename):
-    
+    """
+    counts how often each word appears in the text and prints
+    """
+
     word_count = wordcount(filename)
     
     for w in sorted(word_count.keys()):
@@ -76,15 +81,20 @@ def print_words(filename):
     print(word_count.items())
 
 
-def print_top(filename):
-
+def print_top(filename, n=20):
+    """
+    prints the top n (default n=20) most common word sorted
+    so the most common word is first.
+    """
+    
     word_count = wordcount(filename)
 
-    # Each item is a (word, count) tuple.
-    # Sort them so the big counts are first using key=get_count() to extract count.
-    items = sorted(word_count.items(), key=get_count)
-    for w in sorted(word_count.keys()):
-        print("{} => {}".format(w, word_count[w]))
+    # Copy dictionary into list of tuples.
+    items = word_count.items()
+    items = sorted(items, key=lambda x: x[-1], reverse=True)
+ 
+    for w, v in items[:n]:
+        print("{} => {}".format(w, v))
 
 
 # This basic command line argument parsing code is provided and
