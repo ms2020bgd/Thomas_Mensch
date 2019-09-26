@@ -57,7 +57,7 @@ def length_words(words):
 # Write a function that takes a number and returns a list of its digits.
 def number_to_digits(number):
     s = str(number)
-    return [int(i) for i in s]
+    return [int(digit) for digit in s]
 
 
 # Write a function that translates a text from english to Pig Latin.
@@ -65,8 +65,9 @@ def number_to_digits(number):
 # moving it to the end of the word, and adding 'ay'.
 def pig_latin(text):
 
-    words = text.split()
     out = []
+
+    words = text.split()
     for w in words:
         out.append("{}{}ay".format(w[1:], w[0]))
 
@@ -87,6 +88,7 @@ def fizzbuzz():
             print("Fizz")
         else:
             print(i)
+
     return
 
 
@@ -134,10 +136,17 @@ weather_data = {
 # - date (str): the date
 # - temp (float): the temperature in °celsius (not °kelvin)
 def extract_data(data):
-    result = []
-    for city_name, city_weather_data in data.item():
-        country = city_weather_data['metadata']['country']
-    return {}
+    records = []
+    for city_name, city_data in data.items():
+        for weather in city_data['weather_list']:
+            d = {
+                'name': city_name,
+                'country': city_data['metadata']['country'],
+                'date': weather['dt_txt'],
+                'temp': weather['main']['temp'] - 273.15
+            }
+            records.append(d)
+    return records
 
 
 # End of exercices.
