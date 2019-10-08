@@ -1,11 +1,8 @@
 # Thomas_Mensch
 
-*INFMDI721*
+## INFMDI721 (Python toolkit)
+ - Lesson1 19/09/2019
+ - Lesson2 26/09/2019
 
-## Lesson1 19/09/2019
-
- - exos google
- 
-## Lesson2 26/09/2019
-
- - Accès Data
+## INF725 (DB)
+ - TD 1
