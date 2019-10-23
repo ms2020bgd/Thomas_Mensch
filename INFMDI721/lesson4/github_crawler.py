@@ -5,8 +5,8 @@ from github import Github
 ACCESS_TOKEN = 'a8f657dd208713df6db3e0a948caa089224479c4'
 
 def get_soup_from_url(url):
-    res = requests.get(url)
-    soup = BeautifulSoup(res.content, 'html.parser')
+    content = requests.get(url).content
+    soup = BeautifulSoup(content, 'html.parser')
 
     return soup
 

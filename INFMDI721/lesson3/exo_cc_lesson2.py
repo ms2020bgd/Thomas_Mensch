@@ -6,6 +6,14 @@ URL_PAGE2 = "https://kim.fspot.org/cours/page2.html"
 URL_PAGE3 = "https://kim.fspot.org/cours/page3.html"
 
 
+def get_soup_from_url(url):
+
+    request = requests.get(url)
+    soup = BeautifulSoup(request.content, 'html.parser')
+
+    return soup
+
+
 # Write a function which extract some infos from the pages above.
 # Example:
 #     get_prices_from_url(URL_PAGE2) should return something like this:
@@ -28,65 +36,53 @@ URL_PAGE3 = "https://kim.fspot.org/cours/page3.html"
 #         }
 #     }
 def get_prices_from_url(url):
-    
-    content = requests.get(url)
-    soup = BeautifulSoup(content.text, features="html.parser")
-    
-    #pricing_tables = soup.find('div', class_='pricing-tables')
-    
-    products = soup.find_all('div', class_='pricing-table')
-    
-    
-    for p in products:
-        #print(c)
-        product = p.find('h2_name').text
-        
-        price = p.select('span.pricing-table-price')[0].text
-        price = price.strip()[1:].split()[0]
-        
-        li = p.find_all('li')[3:5]
-        
-        
-        
-        print("{}, {}".format(title, price))
-    
-    #price = float(price[2:].replace(',', '.'))
-   # print(price)
-    
-    
-    return
+    # output dict
+    prices = {}
+
+    # get page
+    soup = get_soup_from_url(url)
+
+    product_table = soup.find_all('div', class_='pricing-table')
+
+    for p in product_table:
+        product_name = p.find('h2').text
+        price = p.find(class_='pricing-table-price') \
+            .text.strip().split()[0]
+
+        storage, db = p.select('.pricing-table-list li')[3:5]
+        prices[product_name] = {
+            'price': price,
+            'storage': storage.text.split()[0],
+            'databases': int(db.text.split()[0]),
+        }
+
+    return prices
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 URL_BEERLIST_AUTRICHE = "https://www.beerwulf.com/fr-FR/api/search/searchProducts?country=Autriche&container=Bouteille"
 
 
-def get_soup_from_url(url):
-    res = requests.get(url)
-    soup = BeautifulSoup(res.content, 'html.parser')
-    return soup
-
-
 def extract_beer_infos(url):
     # Example url: https://www.beerwulf.com/fr-fr/p/bieres/brouwerij-t-verzet-super-noah.33
     soup = get_soup_from_url(url)
 
-    # Extract name:
+    # Extract name
     name = soup.find("h1").text
 
-    # Extract price:
+    # Extract price
     price = soup.select('span.price')[0].text
     price = float(price[2:].replace(',', '.'))  # "€ 2,29" => 2.29
 
-    # Extract volume:
+    # Extract volume
     volume = soup.find('dt', text='Contenu').find_next_sibling()
     volume = int(volume.text[:-2])  # "33cl" => 33
 
-    # Extract evaluation:
+    # Extract evaluation
     note = soup.find('div', class_='stars')
     note = int(note.attrs['data-percent'])
 
-    # Extract EBC:
+    # Extract EBC
     ebc = soup.find('div', class_='ebc')
     children = ebc.find_all('div')
     active_tag = ebc.find('div', class_='active')
@@ -100,6 +96,7 @@ def extract_beer_infos(url):
         'note': note,
         'ebc': ebc_pct,
     }
+
     return infos
 
 
@@ -119,22 +116,24 @@ def extract_beer_infos(url):
 #      {'name': 'Bevog Tak Pale Ale', 'price': 2.79, 'volume': 33, 'note': 70, 'ebc': 23.1},
 #      {'name': 'Brew Age Hopfenauflauf', 'price': 2.99, 'volume': 33, 'note': 70, 'ebc': 7.6}]
 def extract_beer_list_infos(url):
-    
-    import json
-    data  = requests.get(url).content
-    data = json.loads(data)
-    
-    beers = data['items']
-    beers_urls = ['https://www.beerwulf.com' + b['contentReference'] for b in beers]
 
-    print(data)    
-    
-    from multiprocessing import Pool
-    
-    pool = Pool(processes=8)
-    result = pool.map(extract_beer_list_infos, )
-    
-    return [extract_beer_infos(beerwulf)]
+    # get data
+    data = requests.get(url).json()
+
+    beer_pages = []
+    for item in data['items']:
+        beer_pages.append(
+            "https://www.beerwulf.com{}".format(item['contentReference']))
+
+    # Sequential version (slow):
+    beers = [extract_beer_infos(u) for u in beer_pages]
+
+    # Parallel version (faster):
+#    from multiprocessing import Pool
+#    p = Pool(processes=8)
+#    beers = p.map(extract_beer_infos, beer_pages)
+
+    return beers
 
 
 class Lesson2Tests(unittest.TestCase):
@@ -184,4 +183,4 @@ if __name__ == '__main__':
 #    run_tests()
     #get_prices_from_url(URL_PAGE2)
     extract_beer_list_infos(URL_BEERLIST_AUTRICHE)
-    
+
